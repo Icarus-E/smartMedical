@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jianda.smarthealth.dao.HospitalDao">
+    <resultMap id="resultMap" type="com.jianda.smarthealth.pojo.Hospital">
+        <id column="id" property="id"></id>
+        <result column="name" property="name"></result>
+        <result column="phone_num" property="phoneNum"></result>
+        <result column="address" property="address"></result>
+        <result column="grade" property="grade"></result>
+        <result column="description" property="description"></result>
+    </resultMap>
+
+    <resultMap id="resultMap4Doc" type="com.jianda.smarthealth.pojo.Doctor">
+        <id column="id" property="id"></id>
+        <result column="true_name" property="trueName"></result>
+        <result column="gender" property="gender"></result>
+        <result column="birthday" property="birthday"></result>
+        <result column="phone_num" property="phoneNum"></result>
+        <result column="hospital_id" property="hospitalId"></result>
+        <result column="post" property="post"></result>
+    </resultMap>
+
+    <!--添加医院-->
+    <insert id="addHospital" parameterType="com.jianda.smarthealth.pojo.Hospital">
+        insert into tb_hospital (name,phone_num,address,grade,website,description)
+        values (#{name},#{phoneNum},#{address},#{grade},#{website},#{description});
+    </insert>
+
+    <!--设置医院部门-->
+    <insert id="addDepartment4Hospital" parameterType="map">
+        insert into hospital_merge_department (hospital_id, department_id)
+        values (#{hospitalId},#{departmentId});
+    </insert>
+
+    <!--更新医院信息-->
+    <update id="updateInfoById" parameterType="com.jianda.smarthealth.pojo.Hospital">
+        update tb_hospital
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="phoneNum != null and phoneNum != ''">
+                phone_num = #{phoneNum},
+            </if>
+            <if test="address != null and address != ''">
+                address = #{address},
+            </if>
+            <if test="grade != null and grade != 0">
+                grade = #{grade},
+            </if>
+            <if test="website != null and website != ''">
+                website = #{website},
+            </if>
+            <if test="description != null and description != ''">
+                description = #{description}
+            </if>
+
+        </set>
+        where id = #{id};
+    </update>
+
+    <!--删除医院部门-->
+    <delete id="deleteDepartment4Hospital" parameterType="map">
+        delete from hospital_merge_department
+        where department_id = #{departmentId} and hospital_id = #{hospitalId};
+    </delete>
+
+    <!--条件查询-->
+    <select id="selectByCondition" parameterType="com.jianda.smarthealth.pojo.Hospital" resultMap="resultMap">
+        select * from tb_hospital
+        <where>
+            <if test="name != null and name != ''">
+                and name like concat('%',#{name},'%')
+            </if>
+            <if test="phoneNum != null and phoneNum != ''">
+                and phone_num like concat('%',#{phoneNum})
+            </if>
+            <if test="address != null and address != ''">
+                and address like concat('%',#{address},'%')
+            </if>
+            <if test="grade != null and grade != 0">
+                and grade = #{grade}
+            </if>
+            <if test="description != null and description != ''">
+                and description = concat('%',#{description},'%')
+            </if>
+        </where>
+    </select>
+
+    <!--查找医院部门-->
+    <select id="selectDepartmentsByHospitalId" resultType="com.jianda.smarthealth.pojo.Department">
+        select dInfo.id, name, description from tb_department dInfo
+            join(select department_id from hospital_merge_department where hospital_id = #{hId}) dId
+            on dId.department_id = dInfo.id;
+    </select>
+
+    <!--查找部门医生-->
+    <select id="selectDocByHidDid" resultMap="resultMap4Doc">
+        select * from tb_doctor where hospital_id = #{hId} and department_id = #{dId};
+    </select>
+
+
+    <select id="selectByIdHospital" resultType="com.jianda.smarthealth.pojo.Hospital">
+        select * from tb_hospital where id = #{id};
+    </select>
+
+
+</mapper>

@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <!-- 页面meta -->
+
+    <meta charset="utf-8">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>医院管理</title>
+
+    <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+
+    <!-- 引入样式 -->
+
+    <link rel="stylesheet" href="../plugins/elementui/index.css">
+
+    <link rel="stylesheet" href="../plugins/font-awesome/css/font-awesome.min.css">
+
+    <link rel="stylesheet" href="../css/style.css">
+
+</head>
+
+<body class="hold-transition">
+
+<div id="app">
+
+    <el-row>
+        <el-col :span="24">
+            <div class="grid-content bg-purple-dark">
+                <div class="app-container">
+                    <div class="box">
+                        <div class="filter-container">
+
+                            <el-input placeholder="医院名称" v-model="query.name" style="width: 200px;"
+                                      class="filter-item"></el-input>
+                            <el-input placeholder="联系方式" v-model="query.phoneNum" style="width: 200px;"
+                                      class="filter-item"></el-input>
+                            <el-input placeholder="地址" v-model="query.address" style="width: 200px;"
+                                      class="filter-item"></el-input>
+                            <el-input placeholder="等级" v-model="query.grade" style="width: 200px;"
+                                      class="filter-item"></el-input>
+                            <el-input placeholder="简介" v-model="query.description" style="width: 200px;"
+                                      class="filter-item"></el-input>
+
+                            <el-button @click="getAll()" class="dalfBut">查询</el-button>
+                            <el-button type="primary" class="butT" @click="handleCreate()">新建</el-button>
+
+                            <el-table size="small" current-row-key="id" :data="dataList" stripe highlight-current-row>
+
+                                <el-table-column type="index" align="center" label="序号"></el-table-column>
+
+                                <el-table-column prop="name" label="医院名称" align="center"></el-table-column>
+                                <el-table-column prop="phoneNum" label="联系方式" align="center"></el-table-column>
+                                <el-table-column prop="address" label="地址" align="center"></el-table-column>
+                                <el-table-column prop="grade" label="等级" align="center"></el-table-column>
+                                <el-table-column prop="website" label="网站" align="center"></el-table-column>
+                                <el-table-column prop="description" label="简介" align="center"></el-table-column>
+
+                                <el-table-column label="操作" align="center">
+
+                                    <template slot-scope="scope">
+
+                                        <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">修改
+                                        </el-button>
+                                        <el-button type="primary" size="mini" @click="handleSearchDepartment(scope.row)">部门选择
+                                        </el-button>
+
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+
+                            <!-- 新增标签弹层 -->
+
+                            <div class="add-form">
+
+                                <el-dialog title="新增医院" :visible.sync="dialogFormVisible">
+                                    <el-form ref="dataAddForm" :model="formData" :rules="rules" label-position="right"
+                                             label-width="100px">
+                                        <el-row>
+                                            <el-col :span="12">
+                                                <el-form-item label="医院名称" prop="name">
+                                                    <el-input v-model="formData.name"/>
+                                                </el-form-item>
+                                            </el-col>
+                                        </el-row>
+                                        <el-row>
+                                            <el-col :span="12">
+                                                <el-form-item label="联系方式" prop="phoneNum">
+                                                    <el-input v-model="formData.phoneNum"/>
+                                                </el-form-item>
+                                            </el-col>
+                                        </el-row>
+                                        <el-row>
+                                            <el-col :span="12">
+                                                <el-form-item label="地址" prop="address">
+                                                    <el-input v-model="formData.address"/>
+                                                </el-form-item>
+                                            </el-col>
+                                        </el-row>
+                                        <el-row>
+                                            <el-col :span="12">
+                                                <el-form-item label="等级" prop="grade">
+                                                    <el-input v-model="formData.grade"/>
+                                                </el-form-item>
+                                            </el-col>
+                                        </el-row>
+                                        <el-row>
+                                            <el-col :span="12">
+                                                <el-form-item label="网站" prop="website">
+                                                    <el-input v-model="formData.website"/>
+                                                </el-form-item>
+                                            </el-col>
+                                        </el-row>
+                                        <el-row>
+                                            <el-col :span="24">
+                                                <el-form-item label="简介">
+                                                    <el-input v-model="formData.description" type="textarea"></el-input>
+                                                </el-form-item>
+                                            </el-col>
+                                        </el-row>
+                                    </el-form>
+                                    <div slot="footer" class="dialog-footer">
+                                        <el-button @click="cancel()">取消</el-button>
+                                        <el-button type="primary" @click="handleAdd()">确定</el-button>
+                                    </div>
+                                </el-dialog>
+                            </div>
+
+                            <!-- 编辑标签弹层 -->
+
+                            <div class="add-form">
+
+                                <el-dialog title="编辑医院信息" :visible.sync="dialogFormVisible4Edit">
+
+                                    <el-form ref="dataEditForm" :model="formData" :rules="rules" label-position="right"
+                                             label-width="100px">
+                                        <el-form-item label="医院名称">
+                                            <el-input v-model="formData.name" prop="name"></el-input>
+                                        </el-form-item>
+
+                                        <el-form-item label="联系方式" prop="phoneNum">
+                                            <el-input v-model="formData.phoneNum"></el-input>
+                                        </el-form-item>
+
+                                        <el-form-item label="地址" prop="address">
+                                            <el-input v-model="formData.address"></el-input>
+                                        </el-form-item>
+                                        <el-form-item label="等级" prop="grade">
+                                            <el-input v-model="formData.grade"></el-input>
+                                        </el-form-item>
+                                        <el-form-item label="网站" prop="website">
+                                            <el-input v-model="formData.website"></el-input>
+                                        </el-form-item>
+                                        <el-form-item label="简介" prop="description">
+                                            <el-input v-model="formData.description"></el-input>
+                                        </el-form-item>
+
+                                    </el-form>
+
+                                    <div slot="footer" class="dialog-footer">
+
+                                        <el-button @click="cancel()">取消</el-button>
+
+                                        <el-button type="primary" @click="handleEdit()">确定</el-button>
+
+                                    </div>
+                                </el-dialog>
+                            </div>
+
+                            <!-- 部门选择弹层 -->
+
+                            <div class="add-form">
+
+                                <el-dialog title="部门信息" :visible.sync="dialogFormVisible4DepartmentChoosing">
+
+                                    <div class="filter-container">
+                                        <el-input placeholder="部门名称" v-model="dQuery.name" style="width: 200px;"
+                                                  class="filter-item"></el-input>
+                                        <el-button @click="getAllDepartments()" class="dalfBut">查询</el-button>
+                                    </div>
+
+                                    <el-table size="small" current-row-key="id" :data="departmentDataList" stripe
+                                              highlight-current-row>
+
+                                        <el-table-column type="index" align="center" label="序号"></el-table-column>
+
+                                        <el-table-column prop="name" label="部门名称" align="center"></el-table-column>
+
+                                        <el-table-column prop="description" label="部门简介" align="center"></el-table-column>
+
+                                        <el-table-column label="操作" align="center">
+
+                                            <template slot-scope="scope">
+
+                                                <el-button @click="handleDeleteDepartment(scope.row)" type="danger" size="mini"
+                                                           v-if="computedHaveJoined(scope.row.id)">
+                                                    退出
+                                                </el-button>
+                                                <el-button @click="handleSaveDepartment(scope.row)" type="success" size="mini"
+                                                           v-if="!computedHaveJoined(scope.row.id)">
+                                                    加入
+                                                </el-button>
+
+                                            </template>
+
+                                        </el-table-column>
+
+                                    </el-table>
+
+
+                                    <div slot="footer" class="dialog-footer">
+
+                                        <el-button @click="cancel()">取消</el-button>
+
+                                    </div>
+
+                                </el-dialog>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </el-col>
+    </el-row>
+
+
+</div>
+
+</body>
+
+<!-- 引入组件库 -->
+
+<script src="../js/vue.js"></script>
+
+<script src="../plugins/elementui/index.js"></script>
+
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+
+<script src="../js/axios-0.18.0.js"></script>
+
+<script>
+    var vue = new Vue({
+        el: '#app',
+        data: {
+            dataList: [],//当前页要展示的列表数据
+            departmentDataList: [],
+            formData: {},//表单数据
+            dialogFormVisible4DepartmentChoosing: false,
+            dialogFormVisible: false,
+            dialogFormVisible4Edit: false,//编辑表单是否可见
+            rules: {//校验规则
+            },
+            query: {
+                name: "",
+                phoneNum:"",
+                address:"",
+                grade: 0,
+                website:'',
+                description: "",
+            },
+            dQuery:{
+                name:""
+            },
+            departmentsInHospital:[],
+            currentHId: 0,
+        },
+        created() {
+
+        },
+
+        computed:{
+            computedHaveJoined(){
+                return function(id){
+                    res = false;
+                    for(let key in this.departmentsInHospital){
+                        if(this.departmentsInHospital[key].id == id){
+                            res = true;
+                        }
+                    }
+                    return res;
+                }
+            }
+        },
+
+        //钩子函数，VUE对象初始化完成后自动执行
+        mounted() {
+            this.getAll();
+        },
+
+        methods: {
+            //列表
+            getAll() {
+                param = "?name=" + this.query.name + "&phoneNum=" + this.query.phoneNum + "&address=" + this.query.address + "&grade=" + this.query.grade + "&description=" + this.query.description
+                axios.get("/admin/hospital"+param).then((res)=>{
+                    this.dataList = res.data.data;
+                    console.log(res.data.data)
+                })
+            },
+            handleCreate(){
+                this.dialogFormVisible = true;
+                this.resetForm();
+            },
+            //重置表单
+            resetForm() {
+                this.formData = {};
+            },
+            handleAdd(){
+                axios.post("/admin/hospital", this.formData).then((res) => {
+                    if (res.data.flag) {
+                        this.dialogFormVisible = false;
+                        this.$message.success(res.data.msg);
+                    } else {
+                        this.$message.error(res.data.msg);
+                    }
+                }).finally(() => {
+                    this.getAll();
+                });
+            },
+            handleUpdate(row){
+                axios.get("/admin/hospital/" + row.id).then((res) => {
+                    if (res.data.flag && res.data.data != null) {
+                        this.formData = res.data.data;//这一步将id的值存入formData
+                        this.dialogFormVisible4Edit = true;
+                    } else {
+                        this.$message.error(res.data.msg);
+                    }
+                }).finally(() => {
+                    this.getAll();
+                });
+            },
+            handleEdit(){
+                axios.put("/admin/hospital", this.formData).then((res) => {
+                    if (res.data.flag) {
+                        this.dialogFormVisible4Edit = false;
+                        this.$message.success(res.data.msg);
+                    } else {
+                        this.$message.error(res.data.msg);
+                    }
+                }).finally(() => {
+                    this.getAll();
+                });
+            },
+
+            handleSearchDepartment(row){
+                this.currentHId = row.id;
+                this.dialogFormVisible4DepartmentChoosing = true;
+                this.getAllDepartments();
+                this.getDepartmentsByHospital();
+            },
+            getDepartmentsByHospital(){
+                axios.get("/admin/hospital/getD/"+this.currentHId).then((res)=>{
+                    this.departmentsInHospital = res.data.data;
+                })
+            },
+            getAllDepartments(){
+                param = "?name=" + this.dQuery.name
+                axios.get("/admin/department"+param).then((res)=>{
+                    this.departmentDataList = res.data.data;
+                })
+            },
+            handleDeleteDepartment(row){
+                axios.delete("/admin/hospital/delD/" + this.currentHId +"/"+row.id).then((res) => {
+                    if (res.data.flag) {
+                        this.$message.success(res.data.msg);
+                    } else {
+                        this.$message.error(res.data.msg);
+                    }
+                }).finally(() => {
+                    this.getDepartmentsByHospital();
+                });
+            },
+            handleSaveDepartment(row){
+                axios.get("/admin/hospital/addD/" + this.currentHId +"/"+row.id).then((res) => {
+                    if (res.data.flag) {
+                        this.$message.success(res.data.msg);
+                    } else {
+                        this.$message.error(res.data.msg);
+                    }
+                }).finally(() => {
+                    this.getDepartmentsByHospital();
+                });
+
+            },
+            cancel(){
+                this.dialogFormVisible = false;
+                this.dialogFormVisible4Edit = false;
+                this.dialogFormVisible4DepartmentChoosing = false;
+                this.$message.info("取消!");
+            },
+        }
+    })
+
+</script>
+</html>

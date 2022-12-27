@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jianda.smarthealth.dao.HealthArchiveDao">
+    <resultMap id="resultMap" type="com.jianda.smarthealth.pojo.HealthArchive">
+        <id column="id" property="id"></id>
+        <result column="patient_id" property="patientId"></result>
+        <result column="doctor_id" property="doctorId"></result>
+        <result column="illness_description" property="illnessDescription"></result>
+        <result column="diagnose_description" property="diagnoseDescription"></result>
+        <result column="treatment_description" property="treatmentDescription"></result>
+        <result column="date" property="date"></result>
+        <result column="addition_description" property="additionDescription"></result>
+    </resultMap>
+
+    <!--添加诊疗记录-->
+    <insert id="addHealthArchive" parameterType="com.jianda.smarthealth.pojo.HealthArchive">
+        insert into tb_health_archive (patient_id, doctor_id, illness_description, diagnose_description, treatment_description,addition_description, date, status)
+        VALUES (#{patientId},#{doctorId},#{illnessDescription},#{diagnoseDescription},#{treatmentDescription},#{additionDescription},CURDATE(),1)
+    </insert>
+
+    <!--删除诊疗记录-->
+    <update id="deleteById">
+        update tb_health_archive set status = 0 where id = #{id}
+    </update>
+
+    <!--启用诊疗记录-->
+
+
+    <!--查询诊疗记录-->
+    <select id="selectByIds" parameterType="map" resultMap="resultMap">
+        select * from tb_health_archive
+        <where>
+            status = 1
+            <if test="patientId != null and patientId != 0">
+                and patient_id = #{patientId}
+            </if>
+            <if test="doctorId != null and doctorId != 0">
+                and doctor_id = #{doctorId}
+            </if>
+        </where>
+        order by date desc
+    </select>
+
+
+
+
+
+</mapper>

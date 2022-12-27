@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+
+<html style="height: 100%">
+
+<head>
+
+    <!-- 页面meta -->
+
+    <meta charset="utf-8">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>后台管理</title>
+
+    <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+
+    <!-- 引入样式 -->
+
+    <link rel="stylesheet" href="../plugins/elementui/index.css">
+
+    <link rel="stylesheet" href="../plugins/font-awesome/css/font-awesome.min.css">
+
+    <link rel="stylesheet" href="../css/style.css">
+
+
+
+</head>
+
+<body style="height: 100%">
+<span style="left: 50px;"> <h1>后台管理系统</h1> </span>
+    <div id="app" style="height: 100%">
+        <el-menu  class="el-menu-demo" mode="horizontal" @select="handleSelect">
+            <el-menu-item index="1">用户管理</el-menu-item>
+            <el-menu-item index="2">患者管理</el-menu-item>
+            <el-menu-item index="3">医生管理</el-menu-item>
+            <el-menu-item index="4">医院管理</el-menu-item>
+            <el-menu-item index="5">部门管理</el-menu-item>
+        </el-menu>
+        <iframe v-bind:src.sync="url" width="100%"  height="100%"  frameborder="0">
+            <script language="JavaScript">
+                window.location.reload();
+            </script>
+        </iframe>
+    </div>
+
+</body>
+
+<!-- 引入组件库 -->
+
+<script src="../js/vue.js"></script>
+
+<script src="../plugins/elementui/index.js"></script>
+
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+
+<script src="../js/axios-0.18.0.js"></script>
+
+<script>
+    var vue = new Vue({
+        el: '#app',
+        data: {
+            url:"/pages/users.html"
+        },
+        created() {
+        },
+        //钩子函数，VUE对象初始化完成后自动执行
+        mounted() {
+        },
+        update() {
+
+        },
+        methods: {
+            handleSelect(key) {
+                if (key == 1){
+                    this.url = "/pages/users.html?t="+Date.now();
+                }else if(key == 2){
+                    this.url = "/pages/patients.html?t="+Date.now();
+                }else if(key == 3){
+                    this.url = "/pages/doctors.html?t="+Date.now();
+                }else if(key == 4){
+                    this.url = "/pages/hospitals.html?t="+Date.now();
+                }else if (key == 5){
+                    this.url = "/pages/departments.html?t="+Date.now();
+                }
+            }
+        }
+    })
+
+</script>
+</html>

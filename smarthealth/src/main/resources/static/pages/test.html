@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <el-table-column   label="创建人" width="120">
+        <template slot-scope="scope">
+            <user-info :userId="scope.row.id">  </user-info>
+        </template>
+    </el-table-column>
+</body>
+    <script src="../js/vue.js"></script>
+    <script src="../plugins/elementui/index.js"></script>
+    <script type="text/javascript" src="../js/jquery.min.js"></script>
+    <script src="../js/axios-0.18.0.js"></script>
+<script>
+    export default {
+        data() {
+            return {
+                name: null,
+                id:this.userId
+
+            }
+        },
+        methods: {
+            getUserName() {
+                // alert(this.userId);
+                //通过用户id查找用户名称
+                axios.get("/admin/patient/" + this.id).then((res) => {
+                    if (res.data.flag && res.data.data != null) {
+                        this.name = res.data.data;
+
+                    } else {
+                        this.$message.error(res.data.msg);
+                    }
+                });
+            }
+
+
+        },
+        watch: {
+
+        },
+        mounted: function () {
+            console.log(this.id);
+            this.getUserName();
+
+        },
+        props: {
+            userId: String,
+            required: true
+        }
+    }
+</script>
+
+</html>

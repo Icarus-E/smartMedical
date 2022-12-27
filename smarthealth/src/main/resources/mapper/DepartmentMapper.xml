@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jianda.smarthealth.dao.DepartmentDao">
+    <resultMap id="resultMap" type="com.jianda.smarthealth.pojo.Department">
+        <id column="id" property="id"></id>
+        <result column="name" property="name"></result>
+        <result column="description" property="description"></result>
+    </resultMap>
+
+    <!--添加部门-->
+    <insert id="addDepartment" parameterType="com.jianda.smarthealth.pojo.Department">
+        insert into tb_department (name,description)
+        values (#{name},#{description});
+    </insert>
+
+    <!--更新部门信息-->
+    <update id="updateInfoById" parameterType="com.jianda.smarthealth.pojo.Department">
+        update tb_department
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="description != null and description != ''">
+                description = #{description}
+            </if>
+        </set>
+        where id = #{id};
+    </update>
+
+    <!--查询部门-->
+    <select id="selectByName" parameterType="string" resultMap="resultMap">
+        select * from tb_department
+        <where>
+            <if test="name != null and name != ''">
+                and name like concat('%',#{name},'%')
+            </if>
+        </where>
+    </select>
+
+    <select id="selectByIdDepartment" resultType="com.jianda.smarthealth.pojo.Department">
+        select * from tb_department where id = #{id};
+    </select>
+
+</mapper>

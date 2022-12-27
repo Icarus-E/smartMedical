@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <!-- 页面meta -->
+
+    <meta charset="utf-8">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>用户管理</title>
+
+    <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+
+    <!-- 引入样式 -->
+
+    <link rel="stylesheet" href="../plugins/elementui/index.css">
+
+    <link rel="stylesheet" href="../plugins/font-awesome/css/font-awesome.min.css">
+
+    <link rel="stylesheet" href="../css/style.css">
+
+</head>
+
+<body class="hold-transition">
+
+<div id="app">
+
+    <el-row>
+        <el-col :span="24">
+            <div class="grid-content bg-purple-dark">
+                <div class="app-container">
+
+                    <div class="box">
+
+                        <div class="filter-container">
+                            <el-input placeholder="用户名" v-model="query.username" style="width: 200px;"
+                                      class="filter-item"></el-input>
+                            <el-button @click="getAll()" class="dalfBut">查询</el-button>
+
+                        <el-table size="small" current-row-key="id" :data="dataList" stripe highlight-current-row>
+
+                            <el-table-column type="index" align="center" label="序号"></el-table-column>
+
+                            <el-table-column prop="username" label="用户名" align="center"></el-table-column>
+
+                            <el-table-column prop="status" label="用户身份" align="center">
+                                <template slot-scope="scope">
+                                    <div v-if="scope.row.status==1||scope.row.status==-1">
+                                        患者
+                                    </div>
+                                    <div v-if="scope.row.status==2||scope.row.status==0">
+                                        医生
+                                    </div>
+                                </template>
+                            </el-table-column>
+
+                            <el-table-column label="操作" align="center">
+
+                                <template slot-scope="scope">
+
+<!--                                    <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">更改密码-->
+<!--                                    </el-button>-->
+
+                                    <el-button type="danger" size="mini" @click="handleDeprecate(scope.row)"
+                                               v-if="scope.row.status>0">禁用</el-button>
+                                    <el-button type="success" size="mini" @click="handleActivate(scope.row)"
+                                               v-if="scope.row.status<=0">启用</el-button>
+
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </el-col>
+    </el-row>
+
+
+</div>
+
+</body>
+
+<!-- 引入组件库 -->
+
+<script src="../js/vue.js"></script>
+
+<script src="../plugins/elementui/index.js"></script>
+
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+
+<script src="../js/axios-0.18.0.js"></script>
+
+<script>
+    var vue = new Vue({
+        el: '#app',
+        data: {
+            dataList: [],//当前页要展示的列表数据
+            query: {
+                username: "",
+            }
+        },
+        created() {
+
+        },
+        //钩子函数，VUE对象初始化完成后自动执行
+        mounted() {
+            this.getAll();
+        },
+
+        methods: {
+            //列表
+            getAll() {
+                param = "?username=" + this.query.username;
+                axios.get("/admin/user"+param).then((res)=>{
+                    this.dataList = res.data.data;
+                })
+            },
+
+            handleDeprecate(row) {
+                this.$confirm("是否禁用该用户:" + row.username + "?", "提示", {type: "info"}).then(() => {
+                    axios.delete("/admin/user/" + row.id).then((res) => {
+                        if (res.data.flag) {
+                            this.$message.success(res.data.msg);
+                        } else {
+                            this.$message.error(res.data.msg);
+                        }
+                    }).finally(() => {
+                        this.getAll();
+                    });
+                }).catch(() => {
+                    this.$message.info("取消");
+                })
+            },
+            handleActivate(row){
+                this.$confirm("是否启用该用户:" + row.name + "?", "提示", {type: "info"}).then(() => {
+                    axios.put("/admin/user/" + row.id).then((res) => {
+                        if (res.data.flag) {
+                            this.$message.success(res.data.msg);
+                        } else {
+                            this.$message.error(res.data.msg);
+                        }
+                    }).finally(() => {
+                        this.getAll();
+                    });
+                }).catch(() => {
+                    this.$message.info("取消");
+                })
+            },
+            // handleUpdate(){
+            //
+            // }
+        }
+    })
+
+</script>
+</html>

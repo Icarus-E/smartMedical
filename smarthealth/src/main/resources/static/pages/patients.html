@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <!-- 页面meta -->
+
+    <meta charset="utf-8">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>患者管理</title>
+
+    <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+
+    <!-- 引入样式 -->
+
+    <link rel="stylesheet" href="../plugins/elementui/index.css">
+
+    <link rel="stylesheet" href="../plugins/font-awesome/css/font-awesome.min.css">
+
+    <link rel="stylesheet" href="../css/style.css">
+
+</head>
+
+<body class="hold-transition">
+
+<div id="app">
+
+    <el-row>
+        <el-col :span="24">
+            <div class="grid-content bg-purple-dark">
+                <div class="app-container">
+                    <div class="box">
+                        <div class="filter-container">
+
+                            <el-input placeholder="姓名" v-model="query.trueName" style="width: 200px;"
+                                      class="filter-item"></el-input>
+<!--                            <el-input placeholder="性别" v-model="query.gender" style="width: 200px;"-->
+<!--                                      class="filter-item"></el-input>-->
+                            <template class="filter-item" style="width: 200px;">
+                                <el-radio v-model="query.gender" label="">不限</el-radio>
+                                <el-radio v-model="query.gender" label="男">男</el-radio>
+                                <el-radio v-model="query.gender" label="女">女</el-radio>
+                            </template>
+                            <el-input placeholder="电话号码" v-model="query.phoneNum" style="width: 200px;"
+                                      class="filter-item"></el-input>
+                            <el-button @click="getAll()" class="dalfBut">查询</el-button>
+
+                            <el-table size="small" current-row-key="id" :data="dataList" stripe highlight-current-row>
+
+                                <el-table-column type="index" align="center" label="序号"></el-table-column>
+
+                                <el-table-column prop="trueName" label="姓名" align="center"></el-table-column>
+                                <el-table-column prop="gender" label="性别" align="center"></el-table-column>
+                                <el-table-column prop="birthday" label="出生日期" align="center"></el-table-column>
+                                <el-table-column prop="phoneNum" label="电话号码" align="center"></el-table-column>
+                                <el-table-column prop="address" label="家庭住址" align="center"></el-table-column>
+
+                                <el-table-column label="操作" align="center">
+
+                                    <template slot-scope="scope">
+
+                                        <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">修改
+                                        </el-button>
+
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+
+                            <!-- 编辑标签弹层 -->
+
+                            <div class="add-form">
+
+                                <el-dialog title="编辑患者信息" :visible.sync="dialogFormVisible4Edit">
+
+                                    <el-form ref="dataEditForm" :model="formData" :rules="rules" label-position="right"
+                                             label-width="100px">
+                                        <el-form-item label="真实姓名">
+                                            <el-input v-model="formData.trueName" prop="trueName"></el-input>
+                                        </el-form-item>
+
+                                        <el-form-item label="出生日期">
+                                            <el-col :span="11">
+                                                <el-date-picker type="date" placeholder="选择日期" v-model="formData.birthday" style="width: 100%;"></el-date-picker>
+                                            </el-col>
+                                        </el-form-item>
+
+                                        <el-form-item label="性别">
+                                            <el-radio-group v-model="formData.gender">
+                                                <el-radio label="男"></el-radio>
+                                                <el-radio label="女"></el-radio>
+                                            </el-radio-group>
+                                        </el-form-item>
+
+                                        <el-form-item label="联系电话" prop="phoneNum">
+                                            <el-input v-model="formData.phoneNum"></el-input>
+                                        </el-form-item>
+
+                                        <el-form-item label="家庭住址" prop="address">
+                                            <el-input v-model="formData.address"></el-input>
+                                        </el-form-item>
+
+                                    </el-form>
+
+                                    <div slot="footer" class="dialog-footer">
+
+                                        <el-button @click="cancel()">取消</el-button>
+
+                                        <el-button type="primary" @click="handleEdit()">确定</el-button>
+
+                                    </div>
+                                </el-dialog>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </el-col>
+    </el-row>
+
+
+</div>
+
+</body>
+
+<!-- 引入组件库 -->
+
+<script src="../js/vue.js"></script>
+
+<script src="../plugins/elementui/index.js"></script>
+
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+
+<script src="../js/axios-0.18.0.js"></script>
+
+<script>
+    var vue = new Vue({
+        el: '#app',
+        data: {
+            dataList: [],//当前页要展示的列表数据
+            formData: {},//表单数据
+            dialogFormVisible4Edit: false,//编辑表单是否可见
+            rules: {//校验规则
+            },
+            query: {
+                trueName: "",
+                gender:"",
+                birthday:'',
+                phoneNum:"",
+                address:"",
+            }
+        },
+        created() {
+
+        },
+        //钩子函数，VUE对象初始化完成后自动执行
+        mounted() {
+            this.getAll();
+        },
+
+        methods: {
+            //列表
+            getAll() {
+                param = "?trueName=" + this.query.trueName+"&gender="+this.query.gender+"&phoneNum="+this.query.phoneNum;
+                axios.get("/admin/patient"+param).then((res)=>{
+                    this.dataList = res.data.data;
+                    console.log(res.data.data)
+                })
+            },
+
+
+            handleUpdate(row){
+                axios.get("/admin/patient/" + row.id).then((res) => {
+                    if (res.data.flag && res.data.data != null) {
+                        this.formData = res.data.data;//这一步将id的值存入formData
+                        this.dialogFormVisible4Edit = true;
+                    } else {
+                        this.$message.error(res.data.msg);
+                    }
+                }).finally(() => {
+                    this.getAll();
+                });
+            },
+            handleEdit(){
+                axios.put("/admin/patient", this.formData).then((res) => {
+                    if (res.data.flag) {
+                        this.dialogFormVisible4Edit = false;
+                        this.$message.success(res.data.msg);
+                    } else {
+                        this.$message.error(res.data.msg);
+                    }
+                }).finally(() => {
+                    this.getAll();
+                });
+            },
+        }
+    })
+
+</script>
+</html>

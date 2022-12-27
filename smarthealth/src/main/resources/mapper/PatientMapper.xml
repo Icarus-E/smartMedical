@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jianda.smarthealth.dao.PatientDao">
+    <resultMap id="resultMap" type="com.jianda.smarthealth.pojo.Patient">
+        <id column="id" property="id"></id>
+        <result column="true_name" property="trueName"></result>
+        <result column="gender" property="gender"></result>
+        <result column="birthday" property="birthday"></result>
+        <result column="phone_num" property="phoneNum"></result>
+        <result column="address" property="address"></result>
+    </resultMap>
+
+    <resultMap id="resultMap4Registration" type="com.jianda.smarthealth.pojo.Registration">
+        <id column="id" property="id"></id>
+        <result column="patient_id" property="patientId"></result>
+        <result column="doctor_id" property="doctorId"></result>
+        <result column="date" property="date"></result>
+        <result column="doctor_name" property="doctorName"></result>
+        <result column="doctor_gender" property="doctorGender"></result>
+        <result column="post" property="doctorPost"></result>
+        <result column="department_name" property="departmentName"></result>
+        <result column="remain_num" property="remainNum"></result>
+        <result column="sum_num" property="sumNum"></result>
+        <result column="patient_name" property="patientName"></result>
+        <result column="patient_gender" property="patientGender"></result>
+        <result column="patient_phone" property="patientPhoneNum"></result>
+    </resultMap>
+
+    <!--添加patient，并将生成的主键id赋予patient的id属性-->
+    <insert id="addPatient" parameterType="com.jianda.smarthealth.pojo.Patient">
+        insert into tb_patient (true_name, gender, birthday,phone_num,address)
+        values (#{trueName},#{gender},#{birthday},#{phoneNum},#{address});
+
+        <selectKey keyProperty="id" order="AFTER" resultType="_int">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+    </insert>
+
+    <!--更新patient信息-->
+    <update id="updateInfoById" parameterType="com.jianda.smarthealth.pojo.Patient" >
+        update tb_patient
+        <set>
+            <if test="trueName != null and trueName != ''">
+                true_name = #{trueName},
+            </if>
+            <if test="gender != null and gender != ''">
+                gender = #{gender},
+            </if>
+            <if test="birthday != null">
+                birthday = #{birthday},
+            </if>
+            <if test="phoneNum != null and phoneNum != ''">
+                phone_num = #{phoneNum},
+            </if>
+            <if test="address != null and address != ''">
+                address = #{address}
+            </if>
+        </set>
+        where id = #{id};
+    </update>
+
+    <!--条件模糊查询-->
+    <select id="selectByCondition" parameterType="com.jianda.smarthealth.pojo.Patient" resultMap="resultMap">
+        select id, true_name, gender, birthday, phone_num, address from tb_patient p
+            join (select info_id from tb_user where status = 1) u
+            on p.id = u.info_id
+            <where>
+                <if test="trueName != null and trueName != ''">
+                    and true_name like concat('%',#{trueName},'%')
+                </if>
+                <if test="gender != null and gender != ''">
+                    and gender = #{gender}
+                </if>
+                <if test="phoneNum != null and phoneNum != ''">
+                    and phone_num like concat('%',#{phoneNum})
+                </if>
+                <if test="address != null and address != ''">
+                    and address like concat('%',#{address},'%')
+                </if>
+            </where>
+    </select>
+
+    <!--利用id获得患者信息-->
+    <select id="selectByIdPatient" resultType="com.jianda.smarthealth.pojo.Patient">
+        select * from tb_patient where id = #{id}
+    </select>
+
+    <!--查询挂号信息-->
+    <select id="selectRegistration4Patient" resultMap="resultMap4Registration">
+        select tr.id id, tr.patient_id patient_id, tr.doctor_id doctor_id,tr.date date,
+        td.true_name doctor_name, td.gender doctor_gender,td.post post, tde.name department_name ,remain.remain_num,sum.sum_num
+        from tb_registration tr
+        left join tb_doctor td on tr.doctor_id = td.id
+        left join (select doctor_id, sum(status) sum_num from tb_registration group by doctor_id) sum
+        on tr.doctor_id = sum.doctor_id
+        left join tb_department tde on td.department_id = tde.id
+        left join (select r.id,r.doctor_id,(select sum(status) from tb_registration where id <![CDATA[<=]]> r.id and doctor_id = r.doctor_id) remain_num
+        from (select id,doctor_id from tb_registration where patient_id = #{patientId} and status = 1) r) remain
+        on tr.id = remain.id
+        <where>
+            status = 1
+            <if test="patientId != 0 and patientId != null">
+                and patient_id = #{patientId}
+            </if>
+        </where>
+        order by remain_num asc
+    </select>
+
+    <!--添加挂号信息-->
+    <insert id="addRegistrationInfo" parameterType="map">
+        insert into tb_registration (patient_id, doctor_id,date,status)
+        values (#{patientId},#{doctorId},CURDATE(),1)
+    </insert>
+
+    <!--删除挂号信息-->
+    <update id="deleteRegistrationById">
+        update tb_registration set status = 0
+        where id = #{id}
+    </update>
+
+
+</mapper>
